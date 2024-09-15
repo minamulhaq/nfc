@@ -9,6 +9,9 @@ lifecycleRuntimeKtx = "2.8.3"
 activityCompose = "1.9.0"
 composeBom = "2024.04.01"
 
+daggerHilt = "2.51.1"
+hiltCompose = "1.2.0"
+
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -25,7 +28,14 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 
+dagger-hilt-android = {module = "com.google.dagger:hilt-android", version.ref = "daggerHilt"}
+dagger-hilt-android-compiler = {module = "com.google.dagger:hilt-android-compiler", version.ref = "daggerHilt"}
+dagger-hilt-navigation-compose  = {module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltCompose"}
+
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+
+dagger-hilt-android = {id = "com.google.dagger.hilt.android", version.ref = "daggerHilt"}
+
 
