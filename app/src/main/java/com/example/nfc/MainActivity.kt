@@ -1,5 +1,8 @@
 package com.example.nfc
 
+import android.app.PendingIntent
+import android.content.Intent
+import android.nfc.NfcAdapter
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
