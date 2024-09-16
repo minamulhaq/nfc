@@ -7,10 +7,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.nfc.NfcAdapter
-import android.nfc.tech.Ndef
 import android.util.Log
 import com.example.nfc.MainActivity
-import com.example.nfc.util.PendingIntent_Mutable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
@@ -30,7 +28,7 @@ class NFCManager @Inject constructor(
         if (nfcAdapter == null) {
             _nfcState.value = NFCState.NotSupported()
         } else {
-            if (nfcAdapter!!.isEnabled){
+            if (nfcAdapter!!.isEnabled) {
                 _nfcState.value = NFCState.Enabled()
             } else {
                 _nfcState.value = NFCState.Disabled()
@@ -44,7 +42,7 @@ class NFCManager @Inject constructor(
             activity,
             0,
             Intent(activity, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
-            PendingIntent_Mutable
+            PendingIntent.FLAG_MUTABLE
         )
 
     }
@@ -62,6 +60,7 @@ class NFCManager @Inject constructor(
                     _nfcState.value = NFCState.Enabled()
                     Log.d(TAG, "NFC Turned on")
                 }
+
                 NfcAdapter.STATE_OFF -> {
                     _nfcState.value = NFCState.Disabled()
                     Log.d(TAG, "NFC Turned off")
@@ -70,19 +69,17 @@ class NFCManager @Inject constructor(
         }
     }
 
-    fun unregisterReceiver(){
+    fun unregisterReceiver() {
         Log.d(TAG, "unregisterReceiver: Unregistering Receiver")
         context.unregisterReceiver(this)
     }
-
-
 
 
     // Enable foreground dispatch to capture NFC intents when the app is in the foreground
     fun enableForegroundDispatch(activity: Activity) {
 //        val intentFiltersArray = arrayOf(IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED))
 //        val techListsArray = arrayOf(arrayOf(Ndef::class.java.name))
-        if (nfcAdapter == null){
+        if (nfcAdapter == null) {
             Log.d(TAG, "enableForegroundDispatch: nfc adapter is null")
         }
         if (pendingIntent == null) {

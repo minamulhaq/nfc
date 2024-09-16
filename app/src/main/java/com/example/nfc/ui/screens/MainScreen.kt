@@ -9,13 +9,14 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.example.nfc.util.NFCNdefMessageParser
 
 @Composable
 fun MainScreen(
@@ -27,6 +28,7 @@ fun MainScreen(
     val lifecycleOwner = LocalLifecycleOwner.current
     val nfcState = mainScreenViewModel.nfcState.collectAsState()
     val nfcPayLoad = mainScreenViewModel.nfcPayload.collectAsState()
+    val nfcNdefMessageParser: NFCNdefMessageParser = NFCNdefMessageParser()
 
 
 
@@ -35,7 +37,6 @@ fun MainScreen(
     DisposableEffect(lifecycleOwner) {
         // Create a LifecycleObserver
         val observer = LifecycleEventObserver { source, event ->
-            Log.d(TAG, "MainScreen: Source of lifecycle event: $source")
             when(event) {
                 Lifecycle.Event.ON_CREATE -> {
                     mainScreenViewModel.onCreate(context = context as Activity)
@@ -67,13 +68,23 @@ fun MainScreen(
             lifecycle.removeObserver(observer)
         }
     }
+    LaunchedEffect(nfcPayLoad) {
+
+    }
 
     Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding)
         ) {
             Text(text = nfcState.value.name)
-            Text(text = nfcPayLoad.value)
+            nfcPayLoad.value.forEachIndexed {i, nfcInformation ->
+                Text(text = "Record: $i")
+                Text(text = "TagType: ${nfcInformation.tagType}")
+                Text(text= "Supported Techs: ${nfcInformation.supportedTechs}")
+                nfcNdefMessageParser.parseNdefMessage(nfcInformation.msg).forEach{
+                    Text(text = it)
+                }
+            }
         }
     }
 
