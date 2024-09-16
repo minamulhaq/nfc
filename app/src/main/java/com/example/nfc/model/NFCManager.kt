@@ -1,13 +1,15 @@
 package com.example.nfc.model
 
+import android.app.Activity
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.nfc.NfcAdapter
-import android.nfc.NfcManager
+import android.nfc.tech.Ndef
 import android.util.Log
-import androidx.lifecycle.Lifecycle
+import com.example.nfc.MainActivity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
@@ -16,18 +18,22 @@ import javax.inject.Inject
 class NFCManager @Inject constructor(
     private val context: Context
 ) : BroadcastReceiver() {
-    private val TAG: String = this.javaClass.name
+    private val TAG: String = "NFCManager"
     private val _nfcState: MutableStateFlow<NFCState> = MutableStateFlow(NFCState.NotSupported())
     val nfcState = _nfcState.asStateFlow()
 
+    private lateinit var pendingIntent: PendingIntent
+    var nfcAdapter: NfcAdapter? = null
 
 
-    private fun detectNFCState() {
-        var nfcAdapter = NfcAdapter.getDefaultAdapter(context)
+    init {
+    }
+
+    fun detectNFCState() {
         if (nfcAdapter == null) {
             _nfcState.value = NFCState.NotSupported()
         } else {
-            if (nfcAdapter.isEnabled()){
+            if (nfcAdapter!!.isEnabled){
                 _nfcState.value = NFCState.Enabled()
             } else {
                 _nfcState.value = NFCState.Disabled()
@@ -35,10 +41,20 @@ class NFCManager @Inject constructor(
         }
     }
 
-    private fun registerIntent() {
+    fun registerNfcForegroundDispatch(activity: Activity) {
+        Log.d(TAG, "registerNfcForegroundDispatch: registering for foreground dispatch")
+        pendingIntent = PendingIntent.getActivity(
+            activity,
+            0,
+            Intent(activity, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+    }
+
+    fun registerNFCStateChanged() {
         val intentFilter = IntentFilter(NfcAdapter.ACTION_ADAPTER_STATE_CHANGED)
         context.registerReceiver(this, intentFilter)
-        val nfcManager = context.getSystemService(Context.NFC_SERVICE) as NfcManager
     }
 
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -63,20 +79,24 @@ class NFCManager @Inject constructor(
     }
 
 
-    fun onEvent(event: Lifecycle.Event){
-        when(event){
-            Lifecycle.Event.ON_CREATE -> {
-                detectNFCState()
-                registerIntent()
-            }
-            Lifecycle.Event.ON_START -> {}
-            Lifecycle.Event.ON_RESUME -> {}
-            Lifecycle.Event.ON_PAUSE -> {}
-            Lifecycle.Event.ON_STOP -> {}
-            Lifecycle.Event.ON_DESTROY -> {
-                unregisterReceiver()
-            }
-            Lifecycle.Event.ON_ANY -> {}
-        }
+
+
+    // Enable foreground dispatch to capture NFC intents when the app is in the foreground
+    fun enableForegroundDispatch(activity: Activity) {
+        val intentFiltersArray = arrayOf(IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED))
+        val techListsArray = arrayOf(arrayOf(Ndef::class.java.name))
+
+        nfcAdapter!!.enableForegroundDispatch(activity, pendingIntent, intentFiltersArray, techListsArray)
+    }
+
+
+    // Disable foreground dispatch when the app is not in the foreground
+    fun disableForegroundDispatch(context: Activity) {
+        nfcAdapter!!.disableForegroundDispatch(context)
+    }
+
+    fun getNfcAdapter(activity: Activity) {
+        Log.d(TAG, "getNfcAdapter: Getting NFC Adapter")
+        nfcAdapter = NfcAdapter.getDefaultAdapter(context)
     }
 }
