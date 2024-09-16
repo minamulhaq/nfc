@@ -38,7 +38,7 @@ fun MainScreen(
             Log.d(TAG, "MainScreen: Source of lifecycle event: $source")
             when(event) {
                 Lifecycle.Event.ON_CREATE -> {
-                    mainScreenViewModel.onCreate(context as Activity)
+                    mainScreenViewModel.onCreate(context = context as Activity)
                 }
                 Lifecycle.Event.ON_START -> {
                     mainScreenViewModel.onStart()

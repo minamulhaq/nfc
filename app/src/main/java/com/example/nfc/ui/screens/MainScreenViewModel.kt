@@ -29,17 +29,17 @@ class MainScreenViewModel @Inject constructor(
     fun onCreate(context: Activity) {
         Log.d(TAG, "onCreate: ")
         nfcManager.getNfcAdapter(context)
-        nfcManager.registerNfcForegroundDispatch(context)
     }
 
     fun onStart() {
         Log.d(TAG, "onStart: ")
-        nfcManager.detectNFCState()
-        nfcManager.registerNFCStateChanged()
     }
 
     fun onResume(context: Activity) {
         Log.d(TAG, "onResume: ")
+        nfcManager.detectNFCState()
+        nfcManager.registerNFCStateChanged()
+        nfcManager.registerNfcForegroundDispatch(context)
         nfcManager.enableForegroundDispatch(context)
     }
 

@@ -10,6 +10,7 @@ import android.nfc.NfcAdapter
 import android.nfc.tech.Ndef
 import android.util.Log
 import com.example.nfc.MainActivity
+import com.example.nfc.util.PendingIntent_Mutable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
@@ -24,10 +25,6 @@ class NFCManager @Inject constructor(
 
     private lateinit var pendingIntent: PendingIntent
     var nfcAdapter: NfcAdapter? = null
-
-
-    init {
-    }
 
     fun detectNFCState() {
         if (nfcAdapter == null) {
@@ -47,7 +44,7 @@ class NFCManager @Inject constructor(
             activity,
             0,
             Intent(activity, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent_Mutable
         )
 
     }
@@ -83,10 +80,16 @@ class NFCManager @Inject constructor(
 
     // Enable foreground dispatch to capture NFC intents when the app is in the foreground
     fun enableForegroundDispatch(activity: Activity) {
-        val intentFiltersArray = arrayOf(IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED))
-        val techListsArray = arrayOf(arrayOf(Ndef::class.java.name))
+//        val intentFiltersArray = arrayOf(IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED))
+//        val techListsArray = arrayOf(arrayOf(Ndef::class.java.name))
+        if (nfcAdapter == null){
+            Log.d(TAG, "enableForegroundDispatch: nfc adapter is null")
+        }
+        if (pendingIntent == null) {
+            Log.d(TAG, "enableForegroundDispatch: pending intent is null")
+        }
 
-        nfcAdapter!!.enableForegroundDispatch(activity, pendingIntent, intentFiltersArray, techListsArray)
+        nfcAdapter!!.enableForegroundDispatch(activity, pendingIntent, null, null)
     }
 
 
