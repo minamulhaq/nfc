@@ -3,7 +3,9 @@ package com.example.nfc.util
 import android.content.Intent
 import android.nfc.NdefMessage
 import android.nfc.NfcAdapter
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.example.nfc.model.NFCInformation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,6 +18,7 @@ class NfcIntentParser @Inject constructor() {
 
     val nfcPayload: StateFlow<MutableList<NFCInformation>> = _nfcPayload
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun onNewIntent(intent: Intent) {
         val tagInformation = _nfcNdefMessageParser.getNFCTagInformation(intent)
         Log.d(TAG, "onNewIntent: $tagInformation")
