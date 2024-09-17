@@ -1,18 +1,16 @@
 package com.example.nfc
 
 import android.content.Intent
-import android.nfc.NdefMessage
-import android.nfc.NdefRecord
-import android.nfc.NfcAdapter
-import android.nfc.Tag
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.nfc.model.NfcAppMode
 import com.example.nfc.ui.screens.MainScreen
 import com.example.nfc.ui.theme.NfcTheme
 import com.example.nfc.util.NfcIntentParser
@@ -22,6 +20,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val TAG: String = "MainActivity"
+    private var nfcAppMode: NfcAppMode = NfcAppMode.READ()
 
     @Inject
     lateinit var nfcIntentParser: NfcIntentParser
@@ -31,14 +30,17 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NfcTheme {
-                NFCApplication()
+                NFCApplication(nfcAppModeCallback = {
+                    nfcAppMode = it
+                })
             }
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        nfcIntentParser.onNewIntent(intent)
+        nfcIntentParser.onNewIntent(intent, nfcAppMode)
     }
 
 
@@ -48,6 +50,9 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun NFCApplication(modifier: Modifier = Modifier) {
-    MainScreen(modifier = modifier, mainScreenViewModel = hiltViewModel())
+fun NFCApplication(modifier: Modifier = Modifier, nfcAppModeCallback: (NfcAppMode) -> Unit) {
+    val name: String = ""
+    MainScreen(modifier = modifier, mainScreenViewModel = hiltViewModel(), nfcAppModeCallback = {
+        nfcAppModeCallback(it)
+    })
 }

@@ -6,8 +6,11 @@ import android.nfc.NfcAdapter
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.example.nfc.model.NFCManager
+import com.example.nfc.model.NfcAppMode
 import com.example.nfc.util.NfcIntentParser
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 @HiltViewModel
@@ -19,6 +22,11 @@ class MainScreenViewModel @Inject constructor(
 
     val nfcState = nfcManager.nfcState
     val nfcPayload = nfcIntentParser.nfcPayload
+
+
+
+    private val _nfcAppMode: MutableStateFlow<NfcAppMode> = MutableStateFlow(NfcAppMode.READ())
+    val nfcAppMode = _nfcAppMode.asStateFlow()
 
 
     override fun onCleared() {
@@ -63,5 +71,9 @@ class MainScreenViewModel @Inject constructor(
 //        nfcManager.handleNFCIntent(intent) { nfcData ->
 //            _nfcData.value = nfcData
 //        }
+    }
+
+    fun writeTextToNFC(string: String) {
+        _nfcAppMode.value = NfcAppMode.SEARCHING()
     }
 }
