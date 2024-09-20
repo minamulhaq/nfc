@@ -1,6 +1,10 @@
 package com.example.nfc.model
 
+import android.nfc.NdefMessage
+import android.nfc.NdefRecord.createTextRecord
 import android.nfc.Tag
+import android.nfc.tech.MifareClassic
+import android.nfc.tech.Ndef
 import android.nfc.tech.NfcA
 import android.util.Log
 
@@ -12,32 +16,46 @@ interface NfcWriter {
 
 
 
-class NfcAWriter: NfcWriter {
-    override val TAG: String = "NfcAWriter"
+class NfcNdefWriter: NfcWriter {
+    override val TAG: String = "NfcNdefWriter"
 
-    override fun write(tag: Tag, data: String):Boolean{
-        val dataBytes = data.toByteArray(Charsets.UTF_8)
-        val nfcA = NfcA.get(tag)
+    override fun write(tag: Tag, data: String): Boolean {
+        val ndef = Ndef.get(tag)
+
         return try {
-            nfcA.connect()
-            if (!nfcA.isConnected) {
-                Log.d(TAG, "write: NFCA is not Connected")
-                return false
+            if (ndef != null) {
+                // Create an NDEF record with the data as a text record
+                val ndefRecord = createTextRecord("en", data)
+                val ndefMessage = NdefMessage(arrayOf(ndefRecord))
+
+                // Connect to the tag and write the message
+                ndef.connect()
+                if (!ndef.isWritable) {
+                    Log.e(TAG, "NFC tag is not writable")
+                    return false
+                }
+
+                val size = ndefMessage.toByteArray().size
+                if (ndef.maxSize < size) {
+                    Log.e(TAG, "NFC tag does not have enough space")
+                    return false
+                }
+
+                ndef.writeNdefMessage(ndefMessage)
+                Log.d(TAG, "NDEF message written successfully")
+                true
+            } else {
+                Log.e(TAG, "NFC tag is not NDEF compatible")
+                false
             }
-            Log.d(TAG, "write: NFCA is Connected")
-
-            val writeCommand = byteArrayOf(0xA2.toByte(), 0x04.toByte()) // Example write command
-            val payload = writeCommand + dataBytes // Concatenate write command with data
-
-            nfcA.transceive(payload)
-            return true
         } catch (e: Exception) {
+            Log.e(TAG, "Failed to write NDEF message: ${e.localizedMessage}")
             false
         } finally {
             try {
-                nfcA.close()
-            } catch (e: Exception){
-                Log.d(TAG, "write: ${e.stackTraceToString()}")
+                ndef.close()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error closing NFC connection: ${e.localizedMessage}")
             }
         }
     }

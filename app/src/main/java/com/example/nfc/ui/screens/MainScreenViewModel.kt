@@ -7,8 +7,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nfc.model.NFCManager
-import com.example.nfc.model.NfcAWriter
 import com.example.nfc.model.NfcAppMode
+import com.example.nfc.model.NfcNdefWriter
 import com.example.nfc.util.NfcIntentParser
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
@@ -46,7 +46,7 @@ class MainScreenViewModel @Inject constructor(
 
     private fun writeToTag(it: Tag, data: String) {
         Log.d(TAG, "writeToTag: $data")
-        val writer = NfcAWriter()
+        val writer = NfcNdefWriter()
         val result = writer.write(it, data)
         if (result) {
             _nfcIntentParser.updateAppMode(NfcAppMode.FINISHED())
