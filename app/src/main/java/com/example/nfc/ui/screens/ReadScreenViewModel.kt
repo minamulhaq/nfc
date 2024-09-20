@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.nfc.model.NFCManager
 import com.example.nfc.model.NfcAppMode
+import com.example.nfc.model.NfcAppModeManager
 import com.example.nfc.model.NfcNdefWriter
 import com.example.nfc.util.NfcIntentParser
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,44 +17,18 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class MainScreenViewModel @Inject constructor(
+class ReadScreenViewModel @Inject constructor(
     private val _nfcManager: NFCManager,
-    private val _nfcIntentParser: NfcIntentParser
+    private val _nfcIntentParser: NfcIntentParser,
+    private val _nfcAppModeManager: NfcAppModeManager
 ) : ViewModel() {
     private val TAG: String = "MainScreenViewModel"
     val nfcState = _nfcManager.nfcState
     val nfcPayload = _nfcIntentParser.nfcPayload
-    val nfcAppMode = _nfcIntentParser.nfcAppMode
-    private var _textPayloadToWrite: String = ""
+    val nfcAppMode = _nfcAppModeManager.nfcAppMode
 
 
-    init {
-        viewModelScope.launch {
-            val detectedTag = _nfcIntentParser.detectedTag.collectLatest {
-                Log.d(TAG, "Tag Collected in viewmodel: $it")
-                if (nfcAppMode.value is NfcAppMode.WRITING) {
-                    Log.d(TAG, "App Mode: ${nfcAppMode.value}")
-                    it?.also {
-                        Log.d(TAG, "Tag Collected in viewmodel to write: $it")
-                        writeToTag(it, _textPayloadToWrite)
-                    }
-                }
 
-            }
-        }
-
-    }
-
-    private fun writeToTag(it: Tag, data: String) {
-        Log.d(TAG, "writeToTag: $data")
-        val writer = NfcNdefWriter()
-        val result = writer.write(it, data)
-        if (result) {
-            _nfcIntentParser.updateAppMode(NfcAppMode.FINISHED())
-        } else {
-            _nfcIntentParser.updateAppMode(NfcAppMode.ERROR())
-        }
-    }
 
 
     override fun onCleared() {
@@ -100,11 +75,6 @@ class MainScreenViewModel @Inject constructor(
 //        }
     }
 
-    fun writeStringPayload(textPayload: String) {
-        _textPayloadToWrite = textPayload
-        _nfcIntentParser.setNfcAppMode(NfcAppMode.WRITING())
-
-    }
 
     fun updateNfcAppMode(mode: NfcAppMode) {
         _nfcIntentParser.updateAppMode(mode)

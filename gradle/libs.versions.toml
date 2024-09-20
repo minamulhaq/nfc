@@ -11,6 +11,7 @@ composeBom = "2024.04.01"
 
 daggerHilt = "2.51.1"
 hiltCompose = "1.2.0"
+navVersion = "2.8.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -31,6 +32,9 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 dagger-hilt-android = {module = "com.google.dagger:hilt-android", version.ref = "daggerHilt"}
 dagger-hilt-android-compiler = {module = "com.google.dagger:hilt-android-compiler", version.ref = "daggerHilt"}
 dagger-hilt-navigation-compose  = {module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltCompose"}
+
+compose-navigation = {module = "androidx.navigation:navigation-compose", version.ref = "navVersion"}
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

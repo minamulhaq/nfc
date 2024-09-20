@@ -10,8 +10,12 @@ import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.nfc.model.NfcAppMode
-import com.example.nfc.ui.screens.MainScreen
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.nfc.navigation.Screens
+import com.example.nfc.ui.screens.ReadScreen
+import com.example.nfc.ui.screens.WriteScreen
 import com.example.nfc.ui.theme.NfcTheme
 import com.example.nfc.util.NfcIntentParser
 import dagger.hilt.android.AndroidEntryPoint
@@ -48,6 +52,19 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun NFCApplication(modifier: Modifier = Modifier) {
-    val name: String = ""
-    MainScreen(modifier = modifier, mainScreenViewModel = hiltViewModel())
+    val navController = rememberNavController()
+    val navHost = NavHost(navController = navController, startDestination = Screens.Read.route){
+        composable(route = Screens.Read.route) {
+            ReadScreen(modifier = modifier, readScreenViewModel = hiltViewModel(), goToRoute = {screen: Screens->
+                navController.navigate(screen.route)
+            })
+        }
+
+        composable(route = Screens.Write.route) {
+            WriteScreen(writeScreenViewModel = hiltViewModel(), goToRoute = {screen: Screens->
+                navController.navigate(screen.route)
+            })
+        }
+
+    }
 }

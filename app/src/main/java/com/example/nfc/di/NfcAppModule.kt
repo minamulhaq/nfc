@@ -2,7 +2,9 @@ package com.example.nfc.di
 
 import android.content.Context
 import com.example.nfc.model.NFCManager
+import com.example.nfc.model.NfcAppModeManager
 import com.example.nfc.util.NfcIntentParser
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,7 +17,6 @@ import javax.inject.Singleton
 class NfcAppModule {
 
 
-
     @Provides
     @Singleton
     fun provideNfcManager(@ApplicationContext context: Context): NFCManager {
@@ -25,6 +26,15 @@ class NfcAppModule {
 
     @Provides
     @Singleton
-    fun provideNfcIntentParser(): NfcIntentParser = NfcIntentParser()
+    fun provideNfcIntentParser(nfcAppModeManager: NfcAppModeManager): NfcIntentParser {
+        return NfcIntentParser(nfcAppModeManager)
+    }
+
+    @Provides
+    @Singleton
+    fun provideNfcAppModeManager(): NfcAppModeManager {
+        return NfcAppModeManager()
+    }
+
 
 }

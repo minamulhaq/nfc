@@ -8,31 +8,35 @@ import android.nfc.Tag
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
+import androidx.compose.runtime.collectAsState
 import com.example.nfc.model.NFCInformation
 import com.example.nfc.model.NfcAppMode
+import com.example.nfc.model.NfcAppModeManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import javax.inject.Inject
 
-class NfcIntentParser @Inject constructor() {
+class NfcIntentParser @Inject constructor(
+    private val _nfcAppModeManager: NfcAppModeManager
+) {
     private val TAG: String = "NfcIntentParser"
     private val _nfcPayload = MutableStateFlow<MutableList<NFCInformation>>(mutableListOf())
     private val _nfcNdefMessageParser: NFCNdefMessageParser = NFCNdefMessageParser()
+    private val _nfcAppMode = _nfcAppModeManager.nfcAppMode
 
     val nfcPayload: StateFlow<MutableList<NFCInformation>> = _nfcPayload
 
 
-    private val _nfcAppMode: MutableStateFlow<NfcAppMode> = MutableStateFlow(NfcAppMode.READ())
-    val nfcAppMode = _nfcAppMode.asStateFlow()
 
 
     private val _detectedTag: MutableStateFlow<Tag?> = MutableStateFlow(null)
     val detectedTag: StateFlow<Tag?> = _detectedTag.asStateFlow()
 
-    fun setNfcAppMode(mode: NfcAppMode) {
-        _nfcAppMode.value = mode
-    }
+//    fun setNfcAppMode(mode: NfcAppMode) {
+//        _nfcAppModeManager.setNfcAppMode(mode)
+//    }
 
     fun createNDefMessageFromString(string: String): NdefMessage {
         val record = NdefRecord.createTextRecord("en", string)
@@ -76,8 +80,7 @@ class NfcIntentParser @Inject constructor() {
         }
     }
 
-    private fun writeToNFCDevice(intent: Intent) {
-        Log.d(TAG, "writeToNFCDevice: Writing NFC")
+    private fun writeToNFCDevice(intent: Intent) { Log.d(TAG, "writeToNFCDevice: Writing NFC")
 
     }
 
@@ -104,7 +107,7 @@ class NfcIntentParser @Inject constructor() {
 
 
     fun updateAppMode(mode: NfcAppMode) {
-        _nfcAppMode.value = mode
+        _nfcAppModeManager.updateNfcAppMode(mode)
     }
 
 }

@@ -29,6 +29,12 @@
                 <action android:name="android.nfc.action.TAG_DISCOVERED"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
+            <!-- Intent filter for handling NFC tags -->
+            <intent-filter>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain" /> <!-- You can specify different MIME types -->
+            </intent-filter>
 
         </activity>
     </application>
