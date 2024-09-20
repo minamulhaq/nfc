@@ -4,6 +4,7 @@ import android.content.Intent
 import android.nfc.NdefMessage
 import android.nfc.NdefRecord
 import android.nfc.NfcAdapter
+import android.nfc.Tag
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -11,6 +12,7 @@ import com.example.nfc.model.NFCInformation
 import com.example.nfc.model.NfcAppMode
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 
 class NfcIntentParser @Inject constructor() {
@@ -19,11 +21,17 @@ class NfcIntentParser @Inject constructor() {
     private val _nfcNdefMessageParser: NFCNdefMessageParser = NFCNdefMessageParser()
 
     val nfcPayload: StateFlow<MutableList<NFCInformation>> = _nfcPayload
-    private var _nfcAction: NfcAppMode = NfcAppMode.READ()
 
 
-    fun setNfcAction(action: NfcAppMode) {
-        _nfcAction = action
+    private val _nfcAppMode: MutableStateFlow<NfcAppMode> = MutableStateFlow(NfcAppMode.READ())
+    val nfcAppMode = _nfcAppMode.asStateFlow()
+
+
+    private val _detectedTag: MutableStateFlow<Tag?> = MutableStateFlow(null)
+    val detectedTag: StateFlow<Tag?> = _detectedTag.asStateFlow()
+
+    fun setNfcAppMode(mode: NfcAppMode) {
+        _nfcAppMode.value = mode
     }
 
     fun createNDefMessageFromString(string: String): NdefMessage {
@@ -32,9 +40,16 @@ class NfcIntentParser @Inject constructor() {
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
-    fun onNewIntent(intent: Intent, nfcAppMode: NfcAppMode) {
+    fun onNewIntent(intent: Intent) {
         val tagInformation = _nfcNdefMessageParser.getNFCTagInformation(intent)
         Log.d(TAG, "onNewIntent: $tagInformation")
+
+        _detectedTag.value = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG, Tag::class.java)
+        try {
+            
+        } catch (e: Exception) {
+            Log.d(TAG, "onNewIntent: ${e.message}")
+        }
 
 
         val validActions = listOf(
@@ -44,18 +59,52 @@ class NfcIntentParser @Inject constructor() {
         )
 
         if (intent.action in validActions) {
-            _nfcPayload.value.clear()
-            intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES, NdefMessage::class.java)
-                ?.also { rawMessages ->
-                    _nfcPayload.value.addAll(rawMessages.map {
-                        NFCInformation(msg = it as NdefMessage, tagType = _nfcNdefMessageParser.getNFCTagInformation(intent), supportedTechs = _nfcNdefMessageParser.getAvailableTechnologies(intent))
-                    })
+            when(_nfcAppMode.value) {
+                is NfcAppMode.FINISHED -> {
+                    
                 }
-            // Unknown tag
-            if (_nfcPayload.value.isEmpty()) {
-                _nfcPayload.value.add(_nfcNdefMessageParser.createNDefFromUnknownTag(intent))
+                is NfcAppMode.READ -> {
+                    readFromNFCDevice(intent)
+                }
+                is NfcAppMode.WRITING -> {
+                    writeToNFCDevice(intent)
+                    
+                }
+                is NfcAppMode.ERROR -> {}
             }
+
         }
+    }
+
+    private fun writeToNFCDevice(intent: Intent) {
+        Log.d(TAG, "writeToNFCDevice: Writing NFC")
+
+    }
+
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    fun readFromNFCDevice(intent: Intent) {
+        Log.d(TAG, "readFromNFCDevice: Reading from NFC Device")
+        _nfcPayload.value.clear()
+        intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES, NdefMessage::class.java)
+            ?.also { rawMessages ->
+                _nfcPayload.value.addAll(rawMessages.map {
+                    NFCInformation(
+                        msg = it as NdefMessage,
+                        tagType = _nfcNdefMessageParser.getNFCTagInformation(intent),
+                        supportedTechs = _nfcNdefMessageParser.getAvailableTechnologies(intent)
+                    )
+                })
+            }
+        // Unknown tag
+        if (_nfcPayload.value.isEmpty()) {
+            _nfcPayload.value.add(_nfcNdefMessageParser.createNDefFromUnknownTag(intent))
+        }
+    }
+
+
+    fun updateAppMode(mode: NfcAppMode) {
+        _nfcAppMode.value = mode
     }
 
 }

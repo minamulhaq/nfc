@@ -14,7 +14,9 @@ import android.nfc.tech.NfcA
 import android.nfc.tech.NfcB
 import android.nfc.tech.NfcF
 import android.nfc.tech.NfcV
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.example.nfc.model.NFCInformation
 import javax.inject.Inject
 
@@ -87,6 +89,7 @@ class NFCNdefMessageParser @Inject constructor() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun getNFCTagInformation(intent: Intent): String {
         val tag = intent.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG, Tag::class.java)
             ?: return "Unknown tag type"
@@ -106,6 +109,7 @@ class NFCNdefMessageParser @Inject constructor() {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     fun createNDefFromUnknownTag(intent: Intent): NFCInformation {
         val empty = ByteArray(0)
         val id = intent.getByteArrayExtra(NfcAdapter.EXTRA_ID)

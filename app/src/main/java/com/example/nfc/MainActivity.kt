@@ -20,7 +20,6 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val TAG: String = "MainActivity"
-    private var nfcAppMode: NfcAppMode = NfcAppMode.READ()
 
     @Inject
     lateinit var nfcIntentParser: NfcIntentParser
@@ -30,9 +29,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NfcTheme {
-                NFCApplication(nfcAppModeCallback = {
-                    nfcAppMode = it
-                })
+                NFCApplication()
             }
         }
     }
@@ -40,7 +37,7 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        nfcIntentParser.onNewIntent(intent, nfcAppMode)
+        nfcIntentParser.onNewIntent(intent)
     }
 
 
@@ -50,9 +47,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun NFCApplication(modifier: Modifier = Modifier, nfcAppModeCallback: (NfcAppMode) -> Unit) {
+fun NFCApplication(modifier: Modifier = Modifier) {
     val name: String = ""
-    MainScreen(modifier = modifier, mainScreenViewModel = hiltViewModel(), nfcAppModeCallback = {
-        nfcAppModeCallback(it)
-    })
+    MainScreen(modifier = modifier, mainScreenViewModel = hiltViewModel())
 }

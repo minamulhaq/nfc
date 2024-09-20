@@ -9,6 +9,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -26,7 +28,6 @@ import com.example.nfc.util.NFCNdefMessageParser
 fun MainScreen(
     modifier: Modifier = Modifier,
     mainScreenViewModel: MainScreenViewModel,
-    nfcAppModeCallback: (NfcAppMode)-> Unit
 
 ) {
     val TAG: String = "MainScreen"
@@ -83,10 +84,19 @@ fun MainScreen(
         mutableStateOf("")
     }
 
+    LaunchedEffect(nfcAppMode) {
+        if (nfcAppMode.value is NfcAppMode.FINISHED){
+            mainScreenViewModel.updateNfcAppMode(NfcAppMode.READ())
+            textToWrite = ""
+        }
+    }
+
 
     Scaffold(modifier = modifier.fillMaxSize()) { innerPadding ->
         Column(
-            modifier = Modifier.padding(innerPadding).fillMaxSize()
+            modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize()
         ) {
             Text(text = nfcState.value.name)
             nfcPayLoad.value.forEachIndexed {i, nfcInformation ->
@@ -107,9 +117,9 @@ fun MainScreen(
             Text(text = "App Mode: ${nfcAppMode.value.description}")
             Button(
                 onClick = {
-                    mainScreenViewModel.writeTextToNFC(textToWrite)
-                    nfcAppModeCallback (nfcAppMode.value)
-                }
+                    mainScreenViewModel.writeStringPayload(textToWrite)
+                },
+                enabled = textToWrite.isNotBlank()
             ) {
                 Text(text = "Write")
             }
