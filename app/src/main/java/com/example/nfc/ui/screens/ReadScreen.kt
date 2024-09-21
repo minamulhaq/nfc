@@ -1,6 +1,7 @@
 package com.example.nfc.ui.screens
 
 import android.app.Activity
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -8,6 +9,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.Lifecycle
@@ -83,16 +85,19 @@ fun ReadScreen(
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize()
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = "READ")
+            Text(text = "READ NFC TAGS")
+            Text(text = "Bring NFC Tag near the device to read the records")
             Text(text = nfcState.value.name)
             nfcPayLoad.value.forEachIndexed { i, nfcInformation ->
                 Text(text = "Record: $i")
                 Text(text = "TagType: ${nfcInformation.tagType}")
                 Text(text = "Supported Techs: ${nfcInformation.supportedTechs}")
                 nfcNdefMessageParser.parseNdefMessage(nfcInformation.msg).forEach {
-                    Text(text = it)
+                    Text(text = "Record Text: $it")
                 }
             }
             Button(onClick = {
