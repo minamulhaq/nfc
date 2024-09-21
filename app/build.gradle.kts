@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.nfc"
+    namespace = "com.opinions.nfc"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.nfc"
+        applicationId = "com.opinions.nfc"
         minSdk = 30
         targetSdk = 34
         versionCode = 1
